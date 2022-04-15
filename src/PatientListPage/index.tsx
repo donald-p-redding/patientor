@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { Box, Table, Button, TableHead, Typography } from "@material-ui/core";
-
 import { PatientFormValues } from "../AddPatientModal/AddPatientForm";
 import AddPatientModal from "../AddPatientModal";
 import { Patient } from "../types";
@@ -11,9 +11,11 @@ import { useStateValue } from "../state";
 import { TableCell } from "@material-ui/core";
 import { TableRow } from "@material-ui/core";
 import { TableBody } from "@material-ui/core";
+import { addPatient, focusPatient } from '../state/reducer';
 
 const PatientListPage = () => {
-  const [{ patients }, dispatch] = useStateValue();
+  const navigate = useNavigate();
+  const [{ patients, patient }, dispatch] = useStateValue();
 
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>();
@@ -31,7 +33,7 @@ const PatientListPage = () => {
         `${apiBaseUrl}/patients`,
         values
       );
-      dispatch({ type: "ADD_PATIENT", payload: newPatient });
+      dispatch(addPatient(newPatient));
       closeModal();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
@@ -42,6 +44,21 @@ const PatientListPage = () => {
         setError("Unknown error");
       }
     }
+  };
+
+  const getInfo = async(event:React.MouseEvent<HTMLAnchorElement>, id:string) => {
+    event.preventDefault();
+
+    if(!patient[id] || !Object.keys(patient).includes(id)) {
+      try {
+        const { data } = await axios.get<Patient>(`${apiBaseUrl}/patients/${id}`);
+        dispatch(focusPatient(data));
+      } catch {
+        console.log(error);
+      }
+    }
+
+    navigate(`/patients/${id}`);
   };
 
   return (
@@ -63,7 +80,9 @@ const PatientListPage = () => {
         <TableBody>
           {Object.values(patients).map((patient: Patient) => (
             <TableRow key={patient.id}>
-              <TableCell>{patient.name}</TableCell>
+              <TableCell>
+                <a style={{cursor:'pointer'}} onClick={(event) => getInfo(event, patient.id)}>{patient.name}</a>
+              </TableCell>
               <TableCell>{patient.gender}</TableCell>
               <TableCell>{patient.occupation}</TableCell>
               <TableCell>
