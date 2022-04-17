@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Entry } from '../types';
+import { Entry, NewEntryData } from '../types';
 import { useStateValue } from "../state";
 import { useParams } from 'react-router-dom';
 import EntryLine from "../components/EntryLine";
@@ -24,22 +24,32 @@ const PatientPage = () => {
     setError(undefined);
   };
 
-  const parseFields = (values:EntryFormValues) => {
+  const parseFields = (values:EntryFormValues):NewEntryData => {
     const { type, date, specialist, description } = values;
-    const { discharge } = values;
-    return {
-      type,
-      date,
-      specialist,
-      description,
-      discharge,
-    };
+    const data = { type, date, specialist, description };
+    let result:NewEntryData | undefined;
+
+    if(type === 'Hospital') {
+      const { discharge } = values;
+      result = {...data, discharge, type};
+    } else if (type === 'OccupationalHealthcare') {
+      const { employerName, sickLeave } = values;
+      result = { ...data, employerName, sickLeave, type};
+    } else if  (type === 'HealthCheck') {
+      const { healthCheckRating } = values;
+      result = {...data, healthCheckRating, type};
+    }
+
+    if(!result){
+      throw new Error('Input error');
+    }
+
+    return result;
   };
 
   const submitNewEntry = async(values: EntryFormValues) => {
-    const data = parseFields(values);
-
     try {
+      const data = parseFields(values);
       const { data: newEntry } = await axios.post<Entry>(
         `${apiBaseUrl}/patients/${String(id)}/entries`,
         data

@@ -1,13 +1,17 @@
 import { Formik, Form, Field } from "formik";
 import { Button } from "@material-ui/core";
 import { TextField, SelectField, TypeSpecificFields } from './FormField';
+import { Entry } from '../types';
 
 export interface EntryFormValues {
   date: string;
-  type: string;
+  type: Entry['type'] | '';
   specialist: string;
   description: string;
-  discharge: {date: string, criteria: string}
+  discharge: {date: string, criteria: string};
+  employerName: string;
+  sickLeave: { startDate: string, endDate: string};
+  healthCheckRating: number
 }
 
 const entryTypes = [
@@ -23,18 +27,20 @@ interface Props {
 }
 
 const AddEntryForm = ({ onSubmit, onCancel }: Props) => {
+  const initialValues:EntryFormValues = {
+    date: '',
+    type: '',
+    specialist: '',
+    description: '',
+    discharge: { date:'', criteria: ''},
+    employerName: '',
+    sickLeave: { startDate: '', endDate: ''},
+    healthCheckRating: 0
+  };
+  
   return (
     <Formik
-      initialValues={{
-        date: '',
-        type: '',
-        specialist: '',
-        description: '',
-        discharge: { date:'', criteria: ''},
-        employerName: '',
-        sickLeave: { startDate: '', endDate: ''},
-        healthCheckRating: 0
-      }}
+      initialValues={initialValues}
       onSubmit={onSubmit}
       validate={(values) => {
         const requiredError = 'This field is required';

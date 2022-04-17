@@ -119,7 +119,7 @@ const HealthCheckFields = () => {
   ];
 
   return (
-    <SelectField name='healthCheck' label='Health Check Rating' options={healthCheckTypes}/>
+    <SelectField name='healthCheckRating' label='Health Check Rating' options={healthCheckTypes}/>
   );
 };
 
